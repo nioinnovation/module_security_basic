@@ -1,0 +1,65 @@
+from unittest.mock import MagicMock
+from nio.modules.context import ModuleContext
+from niocore.util.base64 import base64_encode
+from niocore.testing.test_case import NIOCoreTestCase
+from nio.modules.security.authorizer import Unauthorized
+from nio.modules.security.authenticator import Authenticator
+from nio.modules.web.http import Request
+
+from ..module import BasicSecurityModule
+
+
+class TestBasicAuthentication(NIOCoreTestCase):
+
+    def get_test_modules(self):
+        return super().get_test_modules() | {'security'}
+
+    def get_module(self, module_name):
+        if module_name == 'security':
+            return BasicSecurityModule()
+        else:
+            return super().get_module(module_name)
+
+    def get_context(self, module_name, module):
+        if module_name == 'security':
+            context = ModuleContext()
+            context.users = {
+                "TestName": {"password": base64_encode("TestPass")}
+            }
+            context.permissions = {}
+            return context
+        else:
+            return super().get_context(module_name, module)
+
+    def test_basic_auth(self):
+        """ Test simple basic auth """
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basic {}".format(
+            base64_encode("TestName:TestPass"))
+        user = Authenticator.authenticate(request=request)
+        self.assertEqual('TestName', user.name)
+
+    def test_basic_auth_invalid_pass(self):
+        """ Test simple basic auth with the wrong password """
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basic {}".format(
+            base64_encode("TestName:WrongPass"))
+        with self.assertRaises(Unauthorized):
+            Authenticator.authenticate(request=request)
+
+    def test_header_missing(self):
+        """ Test missing authorization header. Returns default user.
+        """
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = None
+
+        user = Authenticator.authenticate(request=request)
+        self.assertEqual(user.name, 'Guest')
+
+    def test_bad_header(self):
+        """ Test wrong header value
+        """
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basicfffff"
+        with self.assertRaises(Unauthorized):
+            Authenticator.authenticate(request=request)

@@ -1,5 +1,5 @@
 from nio.modules.context import ModuleContext
-from niocore.testing.test_case import NIOCoreTestCase
+from nio.testing.test_case import NIOTestCase
 from nio.modules.security.user import User
 from nio.modules.security.task import SecureTask
 from nio.modules.security.authorizer import Authorizer, Unauthorized
@@ -7,7 +7,7 @@ from nio.modules.security.authorizer import Authorizer, Unauthorized
 from ..module import BasicSecurityModule
 
 
-class TestBasicAuthorization(NIOCoreTestCase):
+class TestBasicAuthorization(NIOTestCase):
 
     def get_test_modules(self):
         return super().get_test_modules() | {'security'}

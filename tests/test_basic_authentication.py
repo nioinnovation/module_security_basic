@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 from nio.modules.context import ModuleContext
-from niocore.util.base64 import base64_encode
-from niocore.testing.test_case import NIOCoreTestCase
+from ..base64 import base64_encode
+from nio.testing.test_case import NIOTestCase
 from nio.modules.security.authorizer import Unauthorized
 from nio.modules.security.authenticator import Authenticator
 from nio.modules.web.http import Request
@@ -9,7 +9,7 @@ from nio.modules.web.http import Request
 from ..module import BasicSecurityModule
 
 
-class TestBasicAuthentication(NIOCoreTestCase):
+class TestBasicAuthentication(NIOTestCase):
 
     def get_test_modules(self):
         return super().get_test_modules() | {'security'}

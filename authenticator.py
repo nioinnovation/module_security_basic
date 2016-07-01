@@ -6,7 +6,7 @@
 from nio.modules.web.http import Request
 from nio.modules.security.authorizer import Unauthorized
 from nio.modules.security.user import User
-from niocore.util.base64 import base64_decode, base64_encode
+from .base64 import base64_decode, base64_encode
 
 
 class Authenticator(object):

@@ -1,7 +1,7 @@
 from nio.modules.security.authorizer import Unauthorized
 from nio.modules.security.user import User
 from nio.modules.security.task import SecureTask
-from nio.modules.security.permissions.permissions import Permissions
+from nio.modules.security.permissions import Permissions
 
 
 class Authorizer(object):
@@ -13,7 +13,7 @@ class Authorizer(object):
     def _configure_permissions(cls, permissions):
         # store the resulting parsed permissions for each username
         cls._permissions = \
-            {username: Permissions({"permissions": user_permissions})
+            {username: Permissions(user_permissions)
              for username, user_permissions in permissions.items()}
 
     @classmethod
@@ -24,7 +24,7 @@ class Authorizer(object):
         perms = cls._get_permissions_for_user(user.name)
         # See if the permission we are checking is in the user's
         # permission set
-        if perms.get(task.permission, *task.resource.split(".")):
+        if perms.get(task.resource, task.permission):
             # The permission matches, return indicating they are
             # authorized
             return

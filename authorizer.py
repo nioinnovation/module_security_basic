@@ -3,6 +3,8 @@ from nio.modules.security.user import User
 from nio.modules.security.task import SecureTask
 from nio.modules.security.permissions import Permissions
 
+from .first_gen_security import handle_backwards_compatibility
+
 
 class Authorizer(object):
 
@@ -11,6 +13,9 @@ class Authorizer(object):
 
     @classmethod
     def _configure_permissions(cls, permissions):
+        # handle old permissions style backwards compatibility
+        handle_backwards_compatibility(permissions)
+
         # store the resulting parsed permissions for each username
         cls._permissions = \
             {username: Permissions(user_permissions)

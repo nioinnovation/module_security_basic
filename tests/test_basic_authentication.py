@@ -48,13 +48,15 @@ class TestBasicAuthentication(NIOTestCase):
             Authenticator.authenticate(request=request)
 
     def test_header_missing(self):
-        """ Test missing authorization header. Returns default user.
+        """ Test missing authorization header.
+
+        Raises Unauthorized.
         """
         request = MagicMock(spec=Request)
         request.get_header.return_value = None
 
-        user = Authenticator.authenticate(request=request)
-        self.assertEqual(user.name, 'Guest')
+        with self.assertRaises(Unauthorized):
+            Authenticator.authenticate(request=request)
 
     def test_bad_header(self):
         """ Test wrong header value

@@ -3,6 +3,8 @@
   Basic Auth support
 
 """
+from bcrypt import checkpw
+
 from nio.modules.web.http import Request
 from nio.modules.security.authorizer import Unauthorized
 from nio.modules.security.user import User
@@ -74,10 +76,20 @@ class Authenticator(object):
             get_nio_logger("Basic.Authenticator").error(msg)
             raise Unauthorized(msg)
 
-        # check password
-        if base64_encode(password) != user.get('password'):
-            msg = "Password is invalid."
-            get_nio_logger("Basic.Authenticator").error(msg)
-            raise Unauthorized(msg)
-
-        return User(name=username)
+        stored_pwd = user.get('password')
+        # validate bcrypt hashed password
+        if stored_pwd.startswith('$2b$'):
+            if checkpw(password.encode(), stored_pwd.encode()):
+                return User(name=username)
+            else:
+                msg = "Password hash is invalid."
+                get_nio_logger("Basic.Authenticator").error(msg)
+                raise Unauthorized(msg)
+        # plain text password stored, use simple comparison
+        else:
+            if base64_encode(password) == stored_pwd:
+                return User(name=username)
+            else:
+                msg = "Password is invalid."
+                get_nio_logger("Basic.Authenticator").error(msg)
+                raise Unauthorized(msg)

@@ -68,6 +68,15 @@ class TestBasicAuthentication(NIOTestCase):
         with self.assertRaises(Unauthorized):
             Authenticator.authenticate(request=request)
 
+    def test_unhashed_with_wrong_context(self):
+        Authenticator._configure_unhashed(False)
+
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basic {}".format(
+            base64_encode("TestName:TestPass"))
+        with self.assertRaises(Unauthorized):
+            Authenticator.authenticate(request=request)
+
     def test_header_missing(self):
         """ Test missing authorization header.
 

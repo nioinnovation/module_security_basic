@@ -27,6 +27,10 @@ class Authenticator(object):
         cls._users = users
 
     @classmethod
+    def _configure_unhashed(cls, unhashed):
+        cls._unhashed = unhashed
+
+    @classmethod
     def authenticate(cls, request):
         """ Authenticates a request expecting a basic authorization header
 
@@ -81,15 +85,13 @@ class Authenticator(object):
         if stored_pwd.startswith('$2b$'):
             if checkpw(password.encode(), stored_pwd.encode()):
                 return User(name=username)
-            else:
-                msg = "Password hash is invalid."
-                get_nio_logger("Basic.Authenticator").error(msg)
-                raise Unauthorized(msg)
-        # plain text password stored, use simple comparison
-        else:
+        # check if plain text password is allowed
+        # use simple comparison
+        if cls._unhashed:
             if base64_encode(password) == stored_pwd:
                 return User(name=username)
-            else:
-                msg = "Password is invalid."
-                get_nio_logger("Basic.Authenticator").error(msg)
-                raise Unauthorized(msg)
+
+        # No match found, return 401
+        msg = "Password is invalid."
+        get_nio_logger("Basic.Authenticator").error(msg)
+        raise Unauthorized(msg)

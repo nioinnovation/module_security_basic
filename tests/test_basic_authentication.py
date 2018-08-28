@@ -30,6 +30,7 @@ class TestBasicAuthentication(NIOTestCase):
                 "HashName": {
                     "password": hashpw(b'HashPass', gensalt()).decode()}
             }
+            context.allow_unhashed_passwords = True
             context.permissions = {}
             return context
         else:

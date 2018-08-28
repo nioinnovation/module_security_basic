@@ -16,6 +16,7 @@ class BasicSecurityModule(SecurityModule):
         self.proxy_authorizer_class(Authorizer)
 
         Authenticator._configure_users(context.users)
+        Authenticator._configure_unhashed(context.allow_unhashed_passwords)
         Authorizer._configure_permissions(context.permissions)
 
     def _prepare_common_context(self):
@@ -26,6 +27,9 @@ class BasicSecurityModule(SecurityModule):
         context.permissions = \
             Settings.getdict('security',
                              'permissions', fallback="etc/permissions.json")
+        context.allow_unhashed_passwords = \
+            Settings.getboolean('security',
+                                'allow_unhashed_passwords', fallback=True)
 
         return context
 

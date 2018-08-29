@@ -4,6 +4,7 @@
 
 """
 from bcrypt import checkpw
+import re
 
 from nio.modules.web.http import Request
 from nio.modules.security.authorizer import Unauthorized
@@ -23,12 +24,9 @@ class Authenticator(object):
     """
 
     @classmethod
-    def _configure_users(cls, users):
+    def _configure(cls, users, allow_unhashed):
         cls._users = users
-
-    @classmethod
-    def _configure_unhashed(cls, unhashed):
-        cls._unhashed = unhashed
+        cls._allow_unhashed = allow_unhashed
 
     @classmethod
     def authenticate(cls, request):
@@ -82,12 +80,12 @@ class Authenticator(object):
 
         stored_pwd = user.get('password')
         # validate bcrypt hashed password
-        if stored_pwd.startswith('$2b$'):
+        if re.search('^\$2.{1}\$.{56}$', stored_pwd):
             if checkpw(password.encode(), stored_pwd.encode()):
                 return User(name=username)
         # check if plain text password is allowed
         # use simple comparison
-        if cls._unhashed:
+        if cls._allow_unhashed:
             if base64_encode(password) == stored_pwd:
                 return User(name=username)
 

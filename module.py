@@ -15,8 +15,9 @@ class BasicSecurityModule(SecurityModule):
         self.proxy_authenticator_class(Authenticator)
         self.proxy_authorizer_class(Authorizer)
 
-        Authenticator._configure_users(context.users)
-        Authenticator._configure_unhashed(context.allow_unhashed_passwords)
+        Authenticator.\
+            _configure(users=context.users, 
+                       allow_unhashed=context.allow_unhashed_passwords)
         Authorizer._configure_permissions(context.permissions)
 
     def _prepare_common_context(self):

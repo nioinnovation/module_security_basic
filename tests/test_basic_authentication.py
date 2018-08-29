@@ -69,7 +69,10 @@ class TestBasicAuthentication(NIOTestCase):
             Authenticator.authenticate(request=request)
 
     def test_unhashed_with_wrong_context(self):
-        Authenticator._configure_unhashed(False)
+        Authenticator._configure(users={"TestName": {
+                                            "password": 
+                                                base64_encode("TestPass")}},
+                                 allow_unhashed=False)
 
         request = MagicMock(spec=Request)
         request.get_header.return_value = "Basic {}".format(

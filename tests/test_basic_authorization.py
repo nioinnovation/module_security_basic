@@ -22,6 +22,7 @@ class TestBasicAuthorization(NIOTestCase):
         if module_name == 'security':
             context = ModuleContext()
             context.users = {}
+            context.allow_unhashed_passwords = True
             context.permissions = {
                 "user1": {"services": "r", "blocks": "r"},
                 "user3": {}

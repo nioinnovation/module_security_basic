@@ -1,4 +1,6 @@
 from unittest.mock import MagicMock
+from bcrypt import hashpw, gensalt
+
 from nio.modules.context import ModuleContext
 from ..base64 import base64_encode
 from nio.testing.test_case import NIOTestCase
@@ -24,8 +26,11 @@ class TestBasicAuthentication(NIOTestCase):
         if module_name == 'security':
             context = ModuleContext()
             context.users = {
-                "TestName": {"password": base64_encode("TestPass")}
+                "TestName": {"password": base64_encode("TestPass")},
+                "HashName": {
+                    "password": hashpw(b'HashPass', gensalt()).decode()}
             }
+            context.allow_unhashed_passwords = True
             context.permissions = {}
             return context
         else:
@@ -44,6 +49,34 @@ class TestBasicAuthentication(NIOTestCase):
         request = MagicMock(spec=Request)
         request.get_header.return_value = "Basic {}".format(
             base64_encode("TestName:WrongPass"))
+        with self.assertRaises(Unauthorized):
+            Authenticator.authenticate(request=request)
+
+    def test_hashed_basic_auth(self):
+        """ Test basic auth with hashed password """
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basic {}".format(
+            base64_encode("HashName:HashPass"))
+        user = Authenticator.authenticate(request=request)
+        self.assertEqual('HashName', user.name)
+
+    def test_hashed_basic_auth_invalid_pass(self):
+        """ Test basic auth with wrong hashed password """
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basic {}".format(
+            base64_encode("HashName:WrongPass"))
+        with self.assertRaises(Unauthorized):
+            Authenticator.authenticate(request=request)
+
+    def test_unhashed_with_wrong_context(self):
+        Authenticator._configure(users={"TestName": {
+                                            "password": 
+                                                base64_encode("TestPass")}},
+                                 allow_unhashed=False)
+
+        request = MagicMock(spec=Request)
+        request.get_header.return_value = "Basic {}".format(
+            base64_encode("TestName:TestPass"))
         with self.assertRaises(Unauthorized):
             Authenticator.authenticate(request=request)
 

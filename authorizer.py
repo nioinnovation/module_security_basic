@@ -1,5 +1,5 @@
 from nio.modules.security.authorizer import Unauthorized
-from nio.modules.security.user import User
+from nio.modules.security.user import User, CoreServiceAccount
 from nio.modules.security.task import SecureTask
 from nio.modules.security.permissions import Permissions
 
@@ -25,6 +25,10 @@ class Authorizer(object):
     def authorize(cls, user, task):
         if not isinstance(user, User) or not isinstance(task, SecureTask):
             raise Unauthorized()
+
+        # Assume the core service account is authorized
+        if isinstance(user, CoreServiceAccount):
+            return
 
         perms = cls._get_permissions_for_user(user.name)
         # See if the permission we are checking is in the user's

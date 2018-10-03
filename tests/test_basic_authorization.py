@@ -1,6 +1,6 @@
 from nio.modules.context import ModuleContext
 from nio.testing.test_case import NIOTestCase
-from nio.modules.security.user import User
+from nio.modules.security.user import User, CoreServiceAccount
 from nio.modules.security.task import SecureTask
 from nio.modules.security.authorizer import Authorizer, Unauthorized
 
@@ -57,3 +57,8 @@ class TestBasicAuthorization(NIOTestCase):
             Authorizer.authorize("just a username", SecureTask("r", "p"))
         with self.assertRaises(Unauthorized):
             Authorizer.authorize(User(), "just a task string")
+
+    def test_core_service_authorized(self):
+        """Make sure a CoreServiceAccount can do anything"""
+        Authorizer.authorize(
+            CoreServiceAccount(), SecureTask("blocks", "write"))
